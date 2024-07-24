@@ -1,5 +1,7 @@
 import requests
 
+from movie import Movie
+
 
 def best_rated_list(number):
     """
@@ -39,7 +41,12 @@ def popular_list(number):
     return movies[:number]
 
 
-def get_movies_from_tmdb_list(list_id):
+def get_movies_from_tmdb_list(list_id=8292727):
+    """
+    :param list_id: TMdB id of list to fetch from (GUI doesn't have an option to edit, so a sample default parameter was
+    set)
+    :return: a list of movie dictionaries
+    """
     movies = []
     i = 1
     number = 1
@@ -55,6 +62,10 @@ def get_movies_from_tmdb_list(list_id):
 
 
 def trending_list(number):
+    """
+    :param number: number of movies to look at from the list
+    :return: a list of movie dictionaries
+    """
     if number <= 0:
         raise ValueError('Number of movies must be positive!')
     movies = []
@@ -69,10 +80,10 @@ def trending_list(number):
     return movies[:number]
 
 
-def user_rated_list(acct_id):
+def user_rated_list(acct_id=21033804):
     """
-    :param acct_id: id of TMdB account
-    :return: a list of lists, each containing [movie_dictionary, user_rating]
+    :param acct_id: id of TMdB account (has to be mine because the way the API works)
+    :return: a list of movie dictionaries
     """
     movies = []
     i = 1
@@ -109,6 +120,10 @@ def get_request(url):
 
 
 def get_movie_info(movie_id):
+    """
+    :param movie_id: TMdB id of the movie
+    :return: a movie dictionary representing the movie
+    """
     if type(movie_id) is not int:
         raise TypeError("movie_id must be an integer")
 
@@ -123,6 +138,7 @@ def get_movie_info(movie_id):
     movie_dict['box_office'] = response['revenue']
     movie_dict['budget'] = response['budget']
     movie_dict['runtime'] = response['runtime']
+    movie_dict['poster_path'] = response['poster_path']
 
     url = "https://api.themoviedb.org/3/movie/" + str(movie_id) + "/credits?language=en-US"
     response = get_request(url)
@@ -136,3 +152,24 @@ def get_movie_info(movie_id):
 
     return movie_dict
 
+
+def movie_prediction(movie_collection):
+    """
+    :param movie_collection: an object of the MovieCollection class
+    :return: a Movie object with the recommended movie
+    """
+    year_dict = movie_collection.get_movies_by_year()
+    most_popular_year = max(year_dict, key=year_dict.get)
+    median_runtime = movie_collection.get_median_runtime()
+    titles = movie_collection.get_movie_titles()
+    i = 1
+    while True:
+        url = ("https://api.themoviedb.org/3/discover/movie?include_adult=true&include_video=false&language=en-US&page=" +
+               str(i) + "&sort_by=vote_count.desc&vote_average.gte=7.5&with_watch_providers=Netflix&with_runtime.gte=" +
+               str(median_runtime-30) + "&with_runtime.lte=" + str(median_runtime+30) + "&primary_release_date.lte=" +
+               str(most_popular_year+2) + "-01-01&primary_release_date.gte=" + str(most_popular_year-2) + "-12-31")
+        response = get_request(url)
+        for movie in response['results']:
+            if movie['title'] not in titles:
+                return Movie(get_movie_info(movie['id']))
+        i += 1

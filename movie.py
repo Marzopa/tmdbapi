@@ -15,6 +15,7 @@ class Movie:
         self.budget = movie_json['budget']
         self.cast = movie_json['cast']
         self.director = movie_json['director']
+        self.poster_path = movie_json['poster_path']
         if 'rating' in movie_json:
             self.rating = movie_json['rating']
         else:
@@ -44,4 +45,3 @@ class Movie:
 
     def __str__(self):
         return f"{self.title} by {self.director} ({self.get_movie_year()})."
-

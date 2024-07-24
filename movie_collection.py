@@ -1,4 +1,5 @@
 from movie import Movie
+import statistics
 
 
 class MovieCollection:
@@ -271,37 +272,8 @@ class MovieCollection:
         """
         :return: the ordered list of Movie objects (including the excluded movies)
         """
-        ordered_list = [self.movie_list[0]]
-        # will raise index error if movie_list[1] doesn't exist, that's why this if statement. and because of error
-        # raised by the innit method we know collection cannot be empty
-        if len(self.movie_list) == 1:
-            return ordered_list
-
-        for movie in self.movie_list[1:]:
-            movie_days = movie.days_since_release()
-            flag = True
-            for i in range(len(ordered_list)):
-                if ordered_list[i].days_since_release() <= movie_days:
-                    ordered_list.insert(i, movie)
-                    flag = False
-                    break
-            # checks if movie was added to list, and if it wasn't append it at the end
-            if flag:
-                ordered_list.append(movie)
-
-        for movie in self.excluded_movies:
-            movie_days = movie.days_since_release()
-            flag = True
-            for i in range(len(ordered_list)):
-                if ordered_list[i].days_since_release() <= movie_days:
-                    ordered_list.insert(i, movie)
-                    flag = False
-                    break
-            # checks if movie was added to list, and if it wasn't append it at the end
-            if flag:
-                ordered_list.append(movie)
-
-        return ordered_list
+        all_movies = self.movie_list + self.excluded_movies
+        return sorted(all_movies, key=lambda movie: movie.days_since_release(), reverse=True)
 
     def get_movies_by_year(self):
         """
@@ -324,6 +296,23 @@ class MovieCollection:
                 year_dict[year] = 1
 
         return dict(sorted(year_dict.items()))
+
+    def get_movie_titles(self):
+        """
+        :return: a list of all movie titles in the collection (including the excluded movies)
+        """
+        movie_titles = []
+        for movie in self.movie_list:
+            movie_titles.append(movie.title)
+        for movie in self.excluded_movies:
+            movie_titles.append(movie.title)
+        return movie_titles
+
+    def get_median_runtime(self):
+        all_runtimes = self.runtimes.copy()
+        for movie in self.excluded_movies:
+            all_runtimes.append(movie.runtime)
+        return statistics.median(all_runtimes)
 
     def __str__(self):
         return f"A collection of {len(self.movie_list) + len(self.excluded_movies)} movies."

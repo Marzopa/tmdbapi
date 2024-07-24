@@ -79,7 +79,7 @@ def generate_list_options():
         elif option == "3" or option == "l":
             list_id = input("Please enter the TMdB list ID: ")
             print(f"Fetching movies from list {list_id}...")
-            movie_collection = MovieCollection(tmdb_functions.user_rated_list(list_id))
+            movie_collection = MovieCollection(tmdb_functions.get_movies_from_tmdb_list(list_id))
             return movie_collection
         elif option == "4" or option == "r":
             acct_id = 21033804
@@ -126,6 +126,7 @@ def print_data_commands():
     print("6. Order movies from oldest to newest (N)")
     print("7. Plot runtime against age of the movie (T)")
     print("8. Graph distribution of movies by year (Y)")
+    print("9. Get a recommended movie (M)")
     print("Return to main menu (X)")
 
 
@@ -153,6 +154,8 @@ def data_visualization_options(movie_collection):
             data_functions.runtime_against_age(movie_collection)
         elif option == "8" or option == "y":
             data_functions.distribution_by_year(movie_collection)
+        elif option == "9" or option == "m":
+            print(f"You should watch {tmdb_functions.movie_prediction(movie_collection)}")
         elif option == 'h':
             print_data_commands()
         elif option == 'x':
